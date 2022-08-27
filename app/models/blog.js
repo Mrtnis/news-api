@@ -5,9 +5,13 @@ const Blog = mongoose.Schema({
     type: String,
     required: true,
   },
+  // category: {
+  //   type: String,
+  //   required: true,
+  // },
   category: {
-    type: String,
-    required: true,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Categories',
   },
   description: {
     type: String,

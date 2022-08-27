@@ -1,17 +1,10 @@
 import Blog from '../models/blog.js';
 import Category from '../models/category.js';
-
-// async function getDataCategory(idCategory) {
-//   const category = await Category.findOne({ _id: idCategory });
-//   return category.title;
-// }
+import mongoose from 'mongoose';
 
 export const getAllBlogs = async (req, res) => {
   try {
-    const result = await Blog.find();
-    // const finalResult = result.forEach(async (b) => {
-    //   b.category = await getDataCategory(b.category);
-    // });
+    const result = await Blog.find().populate({ path: 'category', select: ['title'] });
     res.status(200).json(result);
   } catch (error) {
     res.status(500).json({
@@ -22,12 +15,16 @@ export const getAllBlogs = async (req, res) => {
 
 export const getBlogById = async (req, res) => {
   try {
-    const result = await Blog.findOne({ _id: req.params.id });
+    const result = await Blog.findOne({ _id: req.params.id }).populate({ path: 'category', select: ['title'] });
     if (result == null) {
       return res.status(404).json({
         message: 'Data not found!',
       });
     }
+
+    // add view count
+    result.viewCount += 1;
+    await Blog.updateOne({ _id: req.params.id }, { $set: result });
     res.status(200).json(result);
   } catch (error) {
     res.status(404).json({
@@ -51,10 +48,9 @@ export const saveBlogIntoTable = async (req, res) => {
   }
 
   // check if category id is wrong
-  const dataCategory = await Category.find();
   const idCategory = blog.category;
-  const checkCategory = dataCategory.some((data) => data._id == idCategory);
-  if (!checkCategory) {
+  const dataCategory = await Category.findOne({ _id: idCategory });
+  if (!dataCategory) {
     return res.status(404).json({
       error: 'CATEGORY NOT FOUND',
       message: 'The catgeory id you added is not found. Please check again!',
@@ -75,9 +71,8 @@ export const updateBlogById = async (req, res) => {
   const idBlog = req.params.id;
 
   // check if data empty
-  const dataBlogPrevious = await Blog.find();
-  const checkData = dataBlogPrevious.some((data) => data._id == idBlog);
-  if (!checkData) {
+  const dataBlog = await Blog.findOne({ _id: idBlog });
+  if (!dataBlog) {
     return res.status(404).json({
       error: 'DATA NOT FOUND',
       message: 'The data blog you updated is not found. Please check your blog id!',
@@ -86,14 +81,20 @@ export const updateBlogById = async (req, res) => {
 
   // check if category id is wrong
   if ('category' in req.body) {
-    const dataCategory = await Category.find();
     const idCategory = req.body.category;
-    const checkCategory = dataCategory.some((data) => data._id == idCategory);
-    if (!checkCategory) {
-      return res.status(404).json({
-        error: 'CATEGORY NOT FOUND',
-        message: 'The category id is wrong. Please check again!',
-      });
+    var ObjectId = mongoose.Types.ObjectId;
+    const dataError = {
+      error: 'CATEGORY NOT FOUND',
+      message: 'The catgeory id you added is not found. Please check again!',
+    };
+
+    if (!ObjectId.isValid(idCategory)) {
+      return res.status(404).json(dataError);
+    }
+
+    const dataCategory = await Category.findOne({ _id: idCategory });
+    if (!dataCategory) {
+      return res.status(404).json(dataError);
     }
   }
 

@@ -96,9 +96,8 @@ export const deleteCategoryById = async (req, res) => {
   }
 
   // check if data category is used by blog
-  const dataBlog = await Blog.find();
-  const checkIsCategoryUsedByBlog = dataBlog.some((data) => data.category == idCategory);
-  if (checkIsCategoryUsedByBlog) {
+  const dataBlog = await Blog.findOne({ category: idCategory });
+  if (dataBlog) {
     return res.status(400).json({
       error: 'DATA IS USED',
       message: 'The data category you deleted is used by blog. Please delete the blog first!',
