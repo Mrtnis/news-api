@@ -13,6 +13,18 @@ export const getAllBlogs = async (req, res) => {
   }
 };
 
+export const getBlogByMostViewed = async (req, res) => {
+  try {
+    const result = await Blog.find().populate({ path: 'category', select: ['title'] });
+    const sortResult = result.sort((a, b) => b.viewCount - a.viewCount);
+    res.status(200).json(sortResult);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
 export const getBlogById = async (req, res) => {
   try {
     const result = await Blog.findOne({ _id: req.params.id }).populate({ path: 'category', select: ['title'] });

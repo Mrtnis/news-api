@@ -1,6 +1,6 @@
 import express from 'express';
 import { getAllCategories, getCategoryById, saveCategoryIntoTable, updateCategoryById, deleteCategoryById } from '../app/controllers/categoryController.js';
-import { getAllBlogs, getBlogById, saveBlogIntoTable, updateBlogById, deleteBlogById } from '../app/controllers/blogController.js';
+import { getAllBlogs, getBlogByMostViewed, getBlogById, saveBlogIntoTable, updateBlogById, deleteBlogById } from '../app/controllers/blogController.js';
 
 const router = express.Router();
 
@@ -22,6 +22,7 @@ router.delete('/deleteCategoryById/:id', deleteCategoryById);
 
 // blog router
 router.get('/blogs', getAllBlogs);
+router.get('/getBlogByMostViewed', getBlogByMostViewed);
 router.get('/getBlogById/:id', getBlogById);
 router.post('/addBlog', saveBlogIntoTable);
 router.patch('/updateBlogById/:id', updateBlogById);
